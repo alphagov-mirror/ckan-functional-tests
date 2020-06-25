@@ -1,0 +1,193 @@
+{
+    "license_title": "UK Open Government Licence (OGL)",
+    "relationships_as_object": [],
+    "private": false,
+    "num_tags": 1,
+    "id": "<<PACKAGE_ID>>",
+    "metadata_created": "2020-06-19T16:18:51",
+    "owner_org": "45a0f852-88e5-4d71-962c-74e15c890e64",
+    "metadata_modified": "2020-06-22T14:21:39",
+    "state": "active",
+    "version": null,
+    "license_id": "uk-ogl",
+    "type": "dataset",
+    "resources": [
+    {
+        "cache_last_updated": null,
+        "cache_url": null,
+        "mimetype_inner": null,
+        "hash": "",
+        "description": "Example Dataset #1 - summary of findings",
+        "format": "PDF",
+        "url": "<<MOCK_HARVEST_SOURCE_URL>>/mock-third-party/example-dataset-1/findings.pdf",
+        "created": "2020-06-19T16:18:51",
+        "state": "active",
+        "package_id": "<<PACKAGE_ID>>",
+        "last_modified": null,
+        "mimetype": null,
+        "url_type": null,
+        "position": 0,
+        "revision_id": "10255b22-0c61-4764-a91c-ac26e3f57d45",
+        "size": null,
+        "id": "1c217a07-21f1-4e98-b4fa-f9d6009f4151",
+        "resource_type": null,
+        "name": null
+    },
+    {
+        "cache_last_updated": null,
+        "cache_url": null,
+        "mimetype_inner": null,
+        "hash": "",
+        "description": "Example Dataset #1 - benchmark",
+        "format": "PDF",
+        "url": "<<MOCK_HARVEST_SOURCE_URL>>/mock-third-party/example-dataset-1/benchmark.pdf",
+        "created": "2020-06-19T16:18:51.324516",
+        "state": "active",
+        "package_id": "<<PACKAGE_ID>>",
+        "last_modified": null,
+        "mimetype": null,
+        "url_type": null,
+        "position": 1,
+        "revision_id": "10255b22-0c61-4764-a91c-ac26e3f57d45",
+        "size": null,
+        "id": "9c32745b-d611-4d8c-bec0-4615fb9464d7",
+        "resource_type": null,
+        "name": null
+    },
+    {
+        "cache_last_updated": null,
+        "cache_url": null,
+        "mimetype_inner": null,
+        "hash": "",
+        "description": "Example Dataset #1 - summary of category scores (XLS)",
+        "format": "XLS",
+        "url": "<<MOCK_HARVEST_SOURCE_URL>>/mock-third-party/example-dataset-1/all-categories-summary.xls",
+        "created": "2020-06-19T16:18:51.324547",
+        "state": "active",
+        "package_id": "<<PACKAGE_ID>>",
+        "last_modified": null,
+        "mimetype": null,
+        "url_type": null,
+        "position": 2,
+        "revision_id": "10255b22-0c61-4764-a91c-ac26e3f57d45",
+        "size": null,
+        "id": "67eefa14-86de-4a3f-8fe3-3804ff08f8ce",
+        "resource_type": null,
+        "name": null
+    },
+    {
+        "cache_last_updated": null,
+        "cache_url": null,
+        "mimetype_inner": null,
+        "hash": "",
+        "description": "Example Dataset #1 - summary of category scores (CSV)",
+        "format": "CSV",
+        "url": "<<MOCK_HARVEST_SOURCE_URL>>/mock-third-party/example-dataset-1/all-categories-summary.csv",
+        "created": "2020-06-19T16:18:51",
+        "state": "active",
+        "package_id": "<<PACKAGE_ID>>",
+        "last_modified": null,
+        "mimetype": null,
+        "url_type": null,
+        "position": 3,
+        "revision_id": "10255b22-0c61-4764-a91c-ac26e3f57d45",
+        "size": null,
+        "id": "27ec6d83-7f13-4daf-ba90-227f4271d7f6",
+        "resource_type": null,
+        "name": null
+    }
+    ],
+    "num_resources": 4,
+    "tags": [
+    {
+        "vocabulary_id": null,
+        "state": "active",
+        "display_name": "example-data",
+        "id": "0883e992-af6d-4448-87eb-7505cca8b07c",
+        "name": "example-data"
+    }
+    ],
+    "groups": [],
+    "creator_user_id": "6cb0b1b6-08f4-4175-ac8b-1df27e701ef3",
+    "harvest": [
+    {
+        "value": "bf58c7a1-2b23-487d-bc5d-c8e2cf68e162",
+        "key": "harvest_object_id"
+    },
+    {
+        "value": "64e82f7f-7ce9-4e1a-93ab-8c972a0dd6a1",
+        "key": "harvest_source_id"
+    },
+    {
+        "value": "test 1",
+        "key": "harvest_source_title"
+    }
+    ],
+    "relationships_as_subject": [],
+    "name": "example-dataset-number-one",
+    "isopen": true,
+    "url": "<<MOCK_HARVEST_SOURCE_URL>>/mock-third-party/example-dataset-1/about",
+    "notes": "This is an example CKAN dataset consisting of a number of active resources.",
+    "title": "Example Dataset #1",
+    "extras": [
+    {
+        "value": "",
+        "key": "codelist"
+    },
+    {
+        "value": "",
+        "key": "contact-email"
+    },
+    {
+        "value": "Test User",
+        "key": "contact-name"
+    },
+    {
+        "value": "",
+        "key": "contact-phone"
+    },
+    {
+        "value": "",
+        "key": "foi-email"
+    },
+    {
+        "value": "",
+        "key": "foi-name"
+    },
+    {
+        "value": "",
+        "key": "foi-phone"
+    },
+    {
+        "value": "",
+        "key": "foi-web"
+    },
+    {
+        "value": "",
+        "key": "licence-custom"
+    },
+    {
+        "value": "",
+        "key": "schema-vocabulary"
+    },
+    {
+        "value": "",
+        "key": "theme-primary"
+    }
+    ],
+    "license_url": "http://reference.data.gov.uk/id/open-government-licence",
+    "organization": {
+    "description": "",
+    "created": "2020-06-19T16:06:13",
+    "title": "Example Publisher #1",
+    "name": "example-publisher-1",
+    "is_organization": true,
+    "state": "active",
+    "image_url": "",
+    "revision_id": "d83459ac-9fdf-47cb-83b2-c228bedca780",
+    "type": "organization",
+    "id": "45a0f852-88e5-4d71-962c-74e15c890e64",
+    "approval_status": "approved"
+    },
+    "revision_id": "10255b22-0c61-4764-a91c-ac26e3f57d45"
+}

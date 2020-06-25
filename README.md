@@ -2,6 +2,37 @@
 
 Initially testing just the API.
 
+## Setup CKAN variables
+
+In order to run the tests in docker CKAN using the CKAN static mock harvest source a number of manual steps need to take place:
+
+- Start up your (docker ckan stack)[https://github.com/alphagov/docker-ckan]
+- Create 2 publishers
+  - `Example Publisher #1` with `Charity` organisation type.
+  - `Example Publisher #2` with any organisation type.
+
+- Add the mock harvest source to CKAN
+  - url: `http://static-mock-harvest-source:11088`
+  - name: `test harvest 1`
+- After adding the harvest source start the harvest process by clicking on the reharvest button.
+
+- Edit `Example Dataset #1` to add in a Contact Name
+  - Contact name: `Test User`
+
+- Update the `ckan_vars.conf` file (or relevant CKAN version file):
+
+  PACKAGE_ID=a18d2811-13b0-4838-8bfb-5793433317b9
+  MOCK_HARVEST_SOURCE_URL=http://static-mock-harvest-source:11088
+  OWNER_ORG=< Get the id from http://localhost:5000/api/3/action/organization_show?id=example-publisher-1 >
+
+  - PACKAGE_ID and MOCK_HARVEST_SOURCE_URL are the default values and should work unless you change the package in the ckan-static-mock-harvest-source, or need to run multiple stacks so the MOCK_HARVEST_SOURCE_URL could change.
+  - To find the `OWNER_ORG` go to this URL - http://localhost:5000/api/3/action/organization_show?id=example-publisher-1
+   - There should be just 1 result, the `OWNER_ORG` is the value in the `id` field.
+
+- Update `config.json` to point to the CKAN website that you want to run the tests against.
+
+After all these steps you should be able to run the tests.
+
 ## Installing & Running
 
 Either use the `default.nix` file provided or, in a virtualenv, do a normal

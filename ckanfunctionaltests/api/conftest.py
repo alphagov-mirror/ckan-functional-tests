@@ -1,4 +1,5 @@
 from collections.abc import Mapping, Sequence
+import json
 from random import Random
 
 import pytest
@@ -81,6 +82,11 @@ def random_pkg_slug(base_url, rsession):
 
 
 @pytest.fixture()
+def stable_pkg_slug():
+    return "example-dataset-number-one"
+
+
+@pytest.fixture()
 def random_pkg(base_url, rsession, random_pkg_slug):
     response = rsession.get(f"{base_url}/action/package_show?id={random_pkg_slug}")
     assert response.status_code == 200
@@ -95,7 +101,7 @@ def random_harvestobject_id(base_url, rsession):
     count_response = rsession.get(f"{base_url}/action/package_search?q=harvest_object_id:*&rows=1")
     assert count_response.status_code == 200
 
-    random_index = _random.randint(0, count_response.json()["result"]["count"])
+    random_index = _random.randint(0, count_response.json()["result"]["count"] - 1)
     detail_response = rsession.get(
         f"{base_url}/action/package_search?q=harvest_object_id:*&rows=1&start={random_index}"
     )
@@ -148,29 +154,96 @@ def _strip_unstable_data(obj):
         return obj
 
 
+def set_ckan_vars(json_data):
+    ckan_vars = {}
+    with open(f"ckan-vars.conf") as ckan_vars_file:
+        for line in ckan_vars_file:
+            name, val = line.partition("=")[::2]
+            ckan_vars[name.strip()] = val.strip()
+
+    str_data = json.dumps(json_data)
+
+    for key in ckan_vars:
+        str_data = str_data.replace(f'<<{key}>>', ckan_vars[key])
+    
+    return json.loads(str_data)
+
+
+_key_value_keys = ['harvest', 'extras']
+
+
+def clean_unstable_elements(json_data, parent=None, ignore_element="", is_key_value=True, clean_element=[]):
+    if isinstance(json_data, str):
+        return
+    for key in json_data.keys():
+        if key in ignore_element:
+            continue
+
+        if key in clean_element:
+            json_data[key] = f"<<{key}>>"
+        elif is_key_value and key in _key_value_keys:
+            for item in json_data[key]:
+                item_key = item["key"]
+                item["value"] = f"<<{item_key}-value>>"
+        elif isinstance(json_data[key], list):
+            for item in json_data[key]:
+                clean_unstable_elements(item, key, ignore_element)
+        elif isinstance(json_data[key], dict):
+            clean_unstable_elements(json_data[key], key, ignore_element)
+        elif key in _unstable_keys and not str(json_data[key]).startswith("<<"):
+            if not (key == "id" and not parent):
+                json_data[key] = f"<<{key}>>"
+    return json_data
+
+
 @pytest.fixture()
 def stable_pkg(inc_fixed_data):
-    return _strip_unstable_data(get_example_response(
-        "stable/package_show.inner.civil-service-people-survey-2011.json"
-    ))
+    json_data = get_example_response(
+        "stable/package_show.inner.test.json"
+    )
+    return set_ckan_vars(json_data)
+
+
+@pytest.fixture()
+def stable_pkg_search(inc_fixed_data):
+    return set_ckan_vars(
+        clean_unstable_elements(
+            get_example_response("stable/package_search.inner.test.json")
+        )
+    )
 
 
 @pytest.fixture()
 def stable_pkg_default_schema(inc_fixed_data):
-    return _strip_unstable_data(get_example_response(
-        "stable/package_show.default_schema.inner.civil-service-people-survey-2011.json"
-    ))
+    json_data = get_example_response(
+        "stable/package_show.default_schema.inner.test.json"
+    )
+
+    return set_ckan_vars(json_data)
 
 
 @pytest.fixture()
 def stable_org(inc_fixed_data):
-    return _strip_unstable_data(get_example_response(
-        "stable/organization_show.inner.cabinet-office.json"
+    return _strip_unstable_data(
+        clean_unstable_elements(
+            get_example_response(
+                "stable/organization_show.inner.test.json"
+            )
+        )
+    )
+
+
+@pytest.fixture()
+def stable_org_with_datasets(inc_fixed_data):
+    return set_ckan_vars(get_example_response(
+        "stable/organization_show_with_datasets.inner.test.json"
     ))
 
 
 @pytest.fixture()
 def stable_dataset(inc_fixed_data):
-    return _strip_unstable_data(get_example_response(
-        "stable/search_dataset.inner.civil-service-people-survey-2011.json"
-    ))
+    return set_ckan_vars(
+        get_example_response(
+        "stable/search_dataset.inner.test.json"
+        )
+    )

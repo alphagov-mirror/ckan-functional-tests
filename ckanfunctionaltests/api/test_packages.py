@@ -1,3 +1,4 @@
+import pytest
 import re
 from warnings import warn
 
@@ -7,6 +8,7 @@ from ckanfunctionaltests.api import (
     validate_against_schema,
 )
 from ckanfunctionaltests.api.comparisons import AnySupersetOf
+from ckanfunctionaltests.api.conftest import clean_unstable_elements
 
 
 def test_package_list(base_url_3, rsession):
@@ -49,9 +51,10 @@ def test_package_show(subtests, base_url_3, rsession, random_pkg_slug):
         assert org_response.json()["result"] == AnySupersetOf(rj['result']['organization'], recursive=True)
 
 
-def test_package_show_default_schema(base_url_3, rsession, random_pkg_slug):
+def test_package_show_default_schema(base_url_3, rsession, stable_pkg):
+    # cannot use random slugs as they sometimes contain harvest packages which cannot be handled properly
     response = rsession.get(
-        f"{base_url_3}/action/package_show?id={random_pkg_slug}&use_default_schema=1"
+        f"{base_url_3}/action/package_show?id={stable_pkg['name']}&use_default_schema=1"
     )
     assert response.status_code == 200
     rj = response.json()
@@ -71,6 +74,8 @@ def test_package_show_stable_pkg(subtests, base_url_3, rsession, stable_pkg):
         validate_against_schema(rj, "package_show")
         assert rj["success"] is True
 
+    clean_unstable_elements(rj["result"])
+    clean_unstable_elements(stable_pkg)
     with subtests.test("response equality"):
         assert rj["result"] == AnySupersetOf(stable_pkg, recursive=True, seq_norm_order=True)
 
@@ -81,6 +86,7 @@ def test_package_show_stable_pkg_default_schema(
     rsession,
     stable_pkg_default_schema,
 ):
+    clean_unstable_elements(stable_pkg_default_schema)
     response = rsession.get(
         f"{base_url_3}/action/package_show?id={stable_pkg_default_schema['name']}&use_default_schema=1"
     )
@@ -91,7 +97,10 @@ def test_package_show_stable_pkg_default_schema(
         validate_against_schema(rj, "package_show")
         assert rj["success"] is True
 
+    clean_unstable_elements(rj["result"])
+
     with subtests.test("response equality"):
+        assert rj["result"] == stable_pkg_default_schema
         assert rj["result"] == AnySupersetOf(stable_pkg_default_schema, recursive=True, seq_norm_order=True)
 
 
@@ -100,10 +109,10 @@ def test_package_search_by_full_slug_general_term(
     inc_sync_sensitive,
     base_url_3,
     rsession,
-    random_pkg_slug,
+    stable_pkg_slug,
 ):
     response = rsession.get(
-        f"{base_url_3}/action/package_search?q={random_pkg_slug}&rows=100"
+        f"{base_url_3}/action/package_search?q={stable_pkg_slug}&rows=100"
     )
     assert response.status_code == 200
     rj = response.json()
@@ -115,15 +124,15 @@ def test_package_search_by_full_slug_general_term(
 
     if inc_sync_sensitive:
         desired_result = tuple(
-            pkg for pkg in response.json()["result"]["results"] if pkg["name"] == random_pkg_slug
+            pkg for pkg in response.json()["result"]["results"] if pkg["name"] == stable_pkg_slug
         )
         assert desired_result
         if len(desired_result) > 1:
-            warn(f"Multiple results ({len(desired_result)}) with name = {random_pkg_slug!r})")
+            warn(f"Multiple results ({len(desired_result)}) with name = {stable_pkg_slug!r})")
 
         with subtests.test("approx consistency with package_show"):
             ps_response = rsession.get(
-                f"{base_url_3}/action/package_show?id={random_pkg_slug}"
+                f"{base_url_3}/action/package_show?id={stable_pkg_slug}"
             )
             assert ps_response.status_code == 200
             assert any(
@@ -134,17 +143,21 @@ def test_package_search_by_full_slug_general_term(
             # window)
 
 
+# revision_id is unstable, might have to skip this test to be able to run all the tests?
+# or setup tests which are for dev stacks and staging environments
+@pytest.mark.skip("revision_ids are unstable")
 def test_package_search_by_revision_id_specific_field(
     subtests,
     inc_sync_sensitive,
     base_url_3,
     rsession,
-    random_pkg,
+    stable_pkg,
 ):
     response = rsession.get(
-        f"{base_url_3}/action/package_search?fq=revision_id:{random_pkg['revision_id']}"
+        f"{base_url_3}/action/package_search?fq=revision_id:{stable_pkg['revision_id']}"
         "&rows=1000"
     )
+
     assert response.status_code == 200
     rj = response.json()
 
@@ -155,18 +168,18 @@ def test_package_search_by_revision_id_specific_field(
 
     with subtests.test("all results match criteria"):
         assert all(
-            random_pkg["revision_id"] == pkg["revision_id"] for pkg in rj["result"]["results"]
+            stable_pkg["revision_id"] == pkg["revision_id"] for pkg in rj["result"]["results"]
         )
 
     if inc_sync_sensitive:
         desired_result = tuple(
-            pkg for pkg in rj["result"]["results"] if pkg["id"] == random_pkg["id"]
+            pkg for pkg in rj["result"]["results"] if pkg["id"] == stable_pkg["id"]
         )
         assert len(desired_result) == 1
 
         with subtests.test("approx consistency with package_show"):
-            assert random_pkg["name"] == desired_result[0]["name"]
-            assert random_pkg["organization"] == desired_result[0]["organization"]
+            assert stable_pkg["name"] == desired_result[0]["name"]
+            assert stable_pkg["organization"] == desired_result[0]["organization"]
             # TODO assert actual contents are approximately equal (exact equality is out the
             # window)
 
@@ -176,12 +189,13 @@ def test_package_search_by_org_id_specific_field_and_title_general_term(
     inc_sync_sensitive,
     base_url_3,
     rsession,
-    random_pkg,
+    stable_pkg_search,
 ):
-    title_terms = extract_search_terms(random_pkg["title"], 2)
+    stable_pkg = stable_pkg_search
+    title_terms = extract_search_terms(stable_pkg["title"], 2)
 
     response = rsession.get(
-        f"{base_url_3}/action/package_search?fq=owner_org:{random_pkg['owner_org']}"
+        f"{base_url_3}/action/package_search?fq=owner_org:{stable_pkg['owner_org']}"
         f"&q={title_terms}&rows=1000"
     )
     assert response.status_code == 200
@@ -194,24 +208,26 @@ def test_package_search_by_org_id_specific_field_and_title_general_term(
 
     with subtests.test("all results match criteria"):
         assert all(
-            random_pkg["owner_org"] == pkg["owner_org"] for pkg in rj["result"]["results"]
+            stable_pkg["owner_org"] == pkg["owner_org"] for pkg in rj["result"]["results"]
         )
         # we can't reliably test for the search terms because they may have been stemmed
         # and not correspond to exact matches
 
     if inc_sync_sensitive:
         desired_result = tuple(
-            pkg for pkg in rj["result"]["results"] if pkg["id"] == random_pkg["id"]
+            pkg for pkg in rj["result"]["results"] if pkg["id"] == stable_pkg["id"]
         )
         if rj["result"]["count"] > 1000 and not desired_result:
             # we don't have all results - it may well be on a latter page
-            warn(f"Expected package id {random_pkg['id']!r} not found on first page of results")
+            warn(f"Expected package id {stable_pkg['id']!r} not found on first page of results")
         else:
             assert len(desired_result) == 1
-
             with subtests.test("approx consistency with package_show"):
-                assert random_pkg["name"] == desired_result[0]["name"]
-                assert random_pkg["organization"] == desired_result[0]["organization"]
+                clean_unstable_elements(desired_result[0])
+                clean_unstable_elements(stable_pkg["organization"], parent="organization")
+                assert stable_pkg["name"] == desired_result[0]["name"]
+                assert stable_pkg["organization"] \
+                    == desired_result[0]["organization"]
                 # TODO assert actual contents are approximately equal (exact equality is out
                 # the window)
 
@@ -248,7 +264,8 @@ def test_package_search_facets(subtests, inc_sync_sensitive, base_url_3, rsessio
                 )
 
 
-def test_package_search_stable_package(subtests, base_url_3, rsession, stable_pkg):
+def test_package_search_stable_package(subtests, base_url_3, rsession, stable_pkg_search):
+    stable_pkg = stable_pkg_search
     response = rsession.get(
         f"{base_url_3}/action/package_search?q=name:{stable_pkg['name']}&rows=30"
     )
@@ -264,6 +281,9 @@ def test_package_search_stable_package(subtests, base_url_3, rsession, stable_pk
         pkg for pkg in rj["result"]["results"] if pkg["name"] == stable_pkg["name"]
     )
     assert len(desired_result) == 1
+
+    clean_unstable_elements(desired_result[0])
+    clean_unstable_elements(stable_pkg)
 
     with subtests.test("desired result equality"):
         assert desired_result[0] == AnySupersetOf(stable_pkg, recursive=True, seq_norm_order=True)

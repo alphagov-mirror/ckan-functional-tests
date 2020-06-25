@@ -1,0 +1,20 @@
+{
+    "category": "charity-ngo",
+    "display_name": "Example Publisher #1",
+    "description": "",
+    "created": "2020-06-19T16:06:13.419746",
+    "package_count": 2,
+    "image_display_url": "",
+    "name": "example-publisher-1",
+    "is_organization": true,
+    "state": "active",
+    "image_url": "",
+    "groups": [],
+    "type": "organization",
+    "title": "Example Publisher #1",
+    "revision_id": "d83459ac-9fdf-47cb-83b2-c228bedca780",
+    "num_followers": 0,
+    "id": "45a0f852-88e5-4d71-962c-74e15c890e64",
+    "tags": [],
+    "approval_status": "approved"
+}

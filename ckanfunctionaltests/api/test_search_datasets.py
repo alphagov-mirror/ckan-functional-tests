@@ -5,6 +5,7 @@ import pytest
 
 from ckanfunctionaltests.api import validate_against_schema, extract_search_terms
 from ckanfunctionaltests.api.comparisons import AnySupersetOf
+from ckanfunctionaltests.api.conftest import clean_unstable_elements
 
 
 def _get_limit_offset_params(base_url):
@@ -146,9 +147,9 @@ def test_search_datasets_stable_package_by_title_general_term(
     stable_pkg,
 ):
     limit_param, offset_param = _get_limit_offset_params(base_url_3)
-    title_terms = extract_search_terms(stable_pkg["title"], 3)
+    name_terms = extract_search_terms(stable_pkg["name"], 3)
     response = rsession.get(
-        f"{base_url_3}/search/dataset?q=title:{stable_pkg['name']}&fl=name&{limit_param}=100"
+        f"{base_url_3}/search/dataset?q=name:{stable_pkg['name']}&fl=name&{limit_param}=100"
     )
     assert response.status_code == 200
     rj = response.json()
@@ -169,20 +170,20 @@ def test_search_datasets_by_org_slug_specific_field_and_title_general_term(
     inc_sync_sensitive,
     base_url_3,
     rsession,
-    random_pkg,
+    stable_pkg,
     org_as_q,
 ):
     if base_url_3.endswith("/3") and not org_as_q:
         pytest.skip("field filtering as separate params not supported in v3 endpoint")
 
     limit_param, offset_param = _get_limit_offset_params(base_url_3)
-    title_terms = extract_search_terms(random_pkg["title"], 2)
+    name_terms = "name:" + stable_pkg["name"]
 
     # it's possible to query specific fields in two different ways
-    query_frag = f"q={title_terms}" + (
-        f"+organization:{random_pkg['organization']['name']}"
+    query_frag = f"q={name_terms}" + (
+        f"+organization:{stable_pkg['organization']['name']}"
         if org_as_q else
-        f"&organization={random_pkg['organization']['name']}"
+        f"&organization={stable_pkg['organization']['name']}"
     )
     response = rsession.get(
         f"{base_url_3}/search/dataset?{query_frag}"
@@ -198,7 +199,7 @@ def test_search_datasets_by_org_slug_specific_field_and_title_general_term(
 
     with subtests.test("all results match criteria"):
         assert all(
-            random_pkg["organization"]["name"] == dst["organization"]
+            stable_pkg["organization"]["name"] == dst["organization"]
             for dst in rj["results"]
         )
         # we can't reliably test for the search terms because they may have been stemmed
@@ -207,14 +208,14 @@ def test_search_datasets_by_org_slug_specific_field_and_title_general_term(
     if inc_sync_sensitive:
         with subtests.test("desired result present"):
             desired_result = tuple(
-                dst for dst in rj["results"] if random_pkg["id"] == dst["id"]
+                dst for dst in rj["results"] if stable_pkg["id"] == dst["id"]
             )
             if rj["count"] > 1000 and not desired_result:
                 # we don't have all results - it may well be on a latter page
-                warn(f"Expected dataset id {random_pkg['id']!r} not found on first page of results")
+                warn(f"Expected dataset id {stable_pkg['id']!r} not found on first page of results")
             else:
                 assert len(desired_result) == 1
-                assert desired_result[0]["title"] == random_pkg["title"]
+                assert desired_result[0]["title"] == stable_pkg["title"]
 
 
 @pytest.mark.parametrize("allfields_term", ("all_fields=1", "fl=*",))
@@ -250,4 +251,7 @@ def test_search_datasets_by_full_slug_specific_field_all_fields_response(
     assert len(desired_result) == 1
 
     with subtests.test("desired result equality"):
+        clean_unstable_elements(stable_dataset, clean_element=["harvest", "extras"])
+        clean_unstable_elements(desired_result[0], is_key_value=False, clean_element=['harvest', "extras"])
+        assert desired_result[0] == stable_dataset
         assert desired_result[0] == AnySupersetOf(stable_dataset, recursive=True, seq_norm_order=True)
