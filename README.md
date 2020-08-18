@@ -54,6 +54,11 @@ notably this includes:
    considered "stable" to compare with results from the target. You may want to do so if e.g.
    your target instance is only filled with sparse demo data.
 
+To run against CKAN in Integration:
+
+ - `username`: set the basic auth username on the Integration environment.
+ - `password`: set the basic auth password on the Integration environment.
+
 ## Warnings
 
 This test suite _will_ emit warnings if it is unable to complete an assertion for reasons that
